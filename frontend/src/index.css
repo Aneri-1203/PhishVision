@@ -1,0 +1,131 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  /* Base font size bumped from 14px (default) to 16px */
+  html {
+    font-size: 16px;
+  }
+
+  body {
+    @apply bg-dark-900 text-slate-100 font-sans antialiased;
+    background-image: 
+      radial-gradient(ellipse at 20% 50%, rgba(99, 102, 241, 0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, rgba(139, 92, 246, 0.04) 0%, transparent 50%);
+    min-height: 100vh;
+    /* Minimum readable size everywhere */
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+
+  /* Bump all table text up — tables had the most xs text */
+  table { font-size: 0.925rem; }
+  th    { font-size: 0.8rem; }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { @apply bg-dark-800; }
+  ::-webkit-scrollbar-thumb { @apply bg-dark-400 rounded-full; }
+  ::-webkit-scrollbar-thumb:hover { @apply bg-brand-600; }
+}
+
+@layer components {
+  .card {
+    @apply bg-dark-700 border border-white/5 rounded-2xl;
+  }
+
+  .card-hover {
+    @apply card transition-all duration-200 hover:border-brand-500/30 hover:shadow-lg hover:shadow-brand-500/5;
+  }
+
+  /* Buttons — bumped from text-sm to text-base */
+  .btn-primary {
+    @apply bg-brand-600 hover:bg-brand-500 text-white font-semibold px-5 py-2.5 rounded-xl
+           transition-all duration-200 flex items-center gap-2 text-base
+           disabled:opacity-50 disabled:cursor-not-allowed
+           focus:outline-none focus:ring-2 focus:ring-brand-500/50;
+  }
+
+  .btn-secondary {
+    @apply bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white
+           font-medium px-5 py-2.5 rounded-xl border border-white/10 hover:border-white/20
+           transition-all duration-200 flex items-center gap-2 text-base
+           focus:outline-none focus:ring-2 focus:ring-white/20;
+  }
+
+  .btn-danger {
+    @apply bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300
+           font-medium px-4 py-2 rounded-xl border border-red-500/20
+           transition-all duration-200 flex items-center gap-2 text-base;
+  }
+
+  /* Input — bumped from text-sm to text-base */
+  .input {
+    @apply bg-dark-800 border border-white/10 rounded-xl px-4 py-3 text-slate-100
+           placeholder-slate-500 focus:outline-none focus:border-brand-500/60
+           focus:ring-2 focus:ring-brand-500/20 transition-all duration-200 w-full text-base;
+  }
+
+  /* Verdict badges — bumped from text-xs to text-sm */
+  .badge-phishing {
+    @apply bg-red-500/15 text-red-400 border border-red-500/25 px-2.5 py-0.5 rounded-full text-sm font-semibold;
+  }
+  .badge-suspicious {
+    @apply bg-orange-500/15 text-orange-400 border border-orange-500/25 px-2.5 py-0.5 rounded-full text-sm font-semibold;
+  }
+  .badge-safe {
+    @apply bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 px-2.5 py-0.5 rounded-full text-sm font-semibold;
+  }
+  .badge-unknown {
+    @apply bg-slate-500/15 text-slate-400 border border-slate-500/25 px-2.5 py-0.5 rounded-full text-sm font-semibold;
+  }
+
+  .score-high   { @apply text-red-400; }
+  .score-medium { @apply text-orange-400; }
+  .score-low    { @apply text-emerald-400; }
+
+  /* Sidebar links — bumped from text-sm to text-base */
+  .sidebar-link {
+    @apply flex items-center gap-3 px-4 py-2.5 rounded-xl text-slate-400
+           hover:text-white hover:bg-white/5 transition-all duration-200 text-base font-medium;
+  }
+  .sidebar-link.active {
+    @apply bg-brand-600/20 text-brand-400 border border-brand-500/20;
+  }
+
+  .stat-card {
+    @apply card p-5 flex flex-col gap-1;
+  }
+
+  /* Progress bar — slightly thicker for better visibility */
+  .progress-bar {
+    @apply h-2.5 rounded-full overflow-hidden bg-white/5;
+  }
+  .progress-fill {
+    @apply h-full rounded-full transition-all duration-700;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-gradient-to-r from-brand-400 to-violet-400 bg-clip-text text-transparent;
+  }
+  .glow-brand {
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+  }
+  .border-glow {
+    border-color: rgba(99, 102, 241, 0.4);
+  }
+  .animate-in {
+    animation: slideUp 0.35s ease-out;
+  }
+
+  /* Global text-size overrides — every xs becomes sm, every sm becomes base */
+  .text-xs  { font-size: 0.8rem  !important; line-height: 1.5 !important; }
+  .text-sm  { font-size: 0.925rem !important; line-height: 1.55 !important; }
+  .text-base{ font-size: 1.05rem !important; line-height: 1.6  !important; }
+}

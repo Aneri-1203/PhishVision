@@ -1,0 +1,22 @@
+<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="sg" x1="20" y1="2" x2="20" y2="38" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#818cf8"/>
+      <stop offset="100%" stop-color="#6366f1"/>
+    </linearGradient>
+    <linearGradient id="eg" x1="12" y1="20" x2="28" y2="20" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#c7d2fe"/>
+      <stop offset="100%" stop-color="#a5b4fc"/>
+    </linearGradient>
+    <radialGradient id="ig" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#1e1b4b"/>
+      <stop offset="100%" stop-color="#312e81"/>
+    </radialGradient>
+  </defs>
+  <path d="M20 2L4 8.5V20C4 28.5 11 35.5 20 38C29 35.5 36 28.5 36 20V8.5L20 2Z" fill="url(#sg)"/>
+  <path d="M20 5L7 10.5V20C7 27 13 33 20 35.2C27 33 33 27 33 20V10.5L20 5Z" fill="#4338ca" opacity="0.5"/>
+  <path d="M12 20C12 20 15.5 14.5 20 14.5C24.5 14.5 28 20 28 20C28 20 24.5 25.5 20 25.5C15.5 25.5 12 20 12 20Z" fill="url(#eg)"/>
+  <circle cx="20" cy="20" r="4.2" fill="url(#ig)"/>
+  <circle cx="20" cy="20" r="2" fill="#6366f1"/>
+  <circle cx="21.2" cy="18.8" r="0.8" fill="white" opacity="0.9"/>
+</svg>
