@@ -196,8 +196,12 @@ def compute_whois_score(whois_data: Dict, dns_data: Dict) -> float:
         factors.append(0.55)
     elif age_days < 365:
         factors.append(0.25)
-    else:
+    elif age_days < 730:
+        factors.append(0.10)
+    elif age_days < 1825:  # < 5 years
         factors.append(0.05)
+    else:                   # 5+ years old = very established
+        factors.append(0.0)
 
     # Short expiry = throwaway domain
     expiry = whois_data.get("days_until_expiry")
@@ -208,8 +212,10 @@ def compute_whois_score(whois_data: Dict, dns_data: Dict) -> float:
             factors.append(0.5)
         elif expiry < 365:
             factors.append(0.2)
-        else:
+        elif expiry > 730:   # 2+ years left = established, trusted
             factors.append(0.0)
+        else:
+            factors.append(0.05)
     else:
         factors.append(0.4)
 

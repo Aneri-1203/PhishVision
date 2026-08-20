@@ -229,10 +229,17 @@ def compute_url_phishing_score(features: Dict[str, Any]) -> float:
 
     # Brand distance bonus
     edit_dist = features.get('min_brand_edit_distance', -1)
-    if 0 < edit_dist <= 3:
-        add(1.0 - (edit_dist / 4), 0.12)
-    elif edit_dist == 0:
-        add(0.0, 0.12)  # Exact match = legitimate
+    if edit_dist == 0:
+        # Exact match = this IS the real brand domain — strong safe signal,
+        # aggressively reduce overall score
+        add(0.0, 0.12)
+        # Extra safe credit to push below 10% for real brand domains
+        for i in range(len(score_list)):
+            score_list[i] = score_list[i] * 0.25
+    elif 0 < edit_dist <= 2:
+        add(1.0 - (edit_dist / 3), 0.12)
+    elif edit_dist == 3:
+        add(0.25, 0.12)
     else:
         add(0.0, 0.12)
 

@@ -101,7 +101,7 @@ export default function Scanner() {
 
   const pieData = result ? [
     { name: 'Phishing Risk', value: result.overall_score },
-    { name: 'Safe Zone', value: Math.max(0, 1 - result.overall_score) },
+    { name: 'Safety Margin', value: Math.max(0, 1 - result.overall_score) },
   ] : []
 
   return (
@@ -246,7 +246,7 @@ export default function Scanner() {
 
               {/* Pie chart */}
               <div className="card p-5">
-                <h3 className="text-white font-semibold text-sm mb-3">Risk vs Safe Zone</h3>
+                <h3 className="text-white font-semibold text-sm mb-3">Risk vs Safety Margin</h3>
                 <ResponsiveContainer width="100%" height={200}>
                   <PieChart>
                     <Pie data={pieData} cx="50%" cy="50%"

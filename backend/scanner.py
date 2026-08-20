@@ -14,7 +14,10 @@ from database import ScanResult, ScanJob, TargetBrand, SessionLocal
 from ml_model import extract_url_features, compute_url_phishing_score
 from whois_intel import safe_whois, get_dns_records, compute_whois_score
 from content import fetch_page, extract_content_features, compute_content_phishing_score, compute_content_similarity
-from visual import capture_screenshot, compute_image_similarity, screenshot_to_base64
+from visual import (
+    capture_screenshot, compute_image_similarity,
+    compute_visual_similarity_with_fallback, screenshot_to_base64,
+)
 
 logger = logging.getLogger("phishvision.scanner")
 
@@ -46,21 +49,35 @@ def determine_verdict(score: float) -> tuple:
         return "safe", "high" if score < 0.20 else "medium"
 
 
-def find_target_brand(url_features: Dict, target_brands: List[Dict]) -> Optional[Dict]:
-    """Find the most likely brand being impersonated."""
-    closest = None
-    min_dist = 999
+def find_target_brand(url_features: Dict, target_brands: List[Dict], scanned_domain: str) -> Optional[Dict]:
+    """
+    Find the most likely brand being impersonated.
+    IMPORTANT: Never flag a domain as impersonating itself.
+    e.g. microsoft.com should NOT show 'Impersonating Microsoft'.
+    """
+    import tldextract
+    # Extract the core registered domain being scanned
+    ext = tldextract.extract(scanned_domain)
+    scanned_core = ext.domain.lower()  # e.g. "microsoft" from "microsoft.com"
+    scanned_full = f"{ext.domain}.{ext.suffix}".lower()  # e.g. "microsoft.com"
 
-    closest_brand = url_features.get("closest_brand")
+    closest_brand_name = url_features.get("closest_brand")
+
     for brand in target_brands:
-        if brand["name"] == closest_brand:
-            return brand
+        brand_ext = tldextract.extract(brand["domain"])
+        brand_core = brand_ext.domain.lower()
+        brand_full = brand["domain"].lower()
 
-        # Keyword match fallback
-        domain_lower = url_features.get("closest_brand", "").lower()
-        for kw in brand.get("keywords", []):
-            if kw in domain_lower:
-                return brand
+        # Skip if scanned domain IS this brand's exact domain
+        if scanned_core == brand_core or scanned_full == brand_full:
+            return None
+
+        if brand["name"] == closest_brand_name:
+            # Only flag impersonation if edit distance > 0 (not the real domain)
+            edit_dist = url_features.get("min_brand_edit_distance", 999)
+            if edit_dist == 0:
+                return None  # Exact match = it IS the real brand
+            return brand
 
     return None
 
@@ -126,8 +143,8 @@ async def scan_domain(
         result["url_features"] = url_features
         result["url_score"] = url_score
 
-        # Find impersonated brand
-        target = find_target_brand(url_features, target_brands)
+        # Find impersonated brand — pass clean_domain so we never flag the real site
+        target = find_target_brand(url_features, target_brands, clean_domain)
         if target:
             result["target_brand"] = target["name"]
     except Exception as e:
@@ -181,24 +198,24 @@ async def scan_domain(
     # ── Step 4: Visual Screenshot Analysis ──────────────────────────────────
     visual_score = 0.0
     try:
-        if enable_screenshot:
-            screenshot_path = await capture_screenshot(url)
-            if screenshot_path:
-                result["screenshot_path"] = screenshot_path
-
-                if result["target_brand"] and target and target.get("login_url"):
-                    target_screenshot = await capture_screenshot(target["login_url"])
-                    if target_screenshot:
-                        visual_result = compute_image_similarity(screenshot_path, target_screenshot)
-                        visual_score = visual_result.get("similarity_score", 0.0)
-                        result["visual_features"] = visual_result
-                        result["visual_score"] = visual_score
-                    else:
-                        result["visual_features"] = {"error": "target_screenshot_failed"}
-                else:
-                    result["visual_features"] = {"note": "no_target_brand_for_comparison"}
+        if result["target_brand"] and target and target.get("login_url"):
+            # Use the new fallback-aware function — always produces a score
+            visual_result = await compute_visual_similarity_with_fallback(
+                suspect_url=url,
+                target_url=target["login_url"],
+                enable_screenshot=enable_screenshot,
+            )
+            visual_score = visual_result.get("similarity_score", 0.0)
+            result["visual_features"] = visual_result
+            result["visual_score"] = visual_score
+            # Store screenshot path if captured
+            if visual_result.get("screenshot_path"):
+                result["screenshot_path"] = visual_result["screenshot_path"]
+        else:
+            result["visual_features"] = {"note": "no_target_brand_for_comparison"}
     except Exception as e:
         errors.append(f"Visual analysis failed: {e}")
+        logger.error(f"Visual analysis error: {e}")
 
     # ── Step 5: Ensemble Scoring ──────────────────────────────────────────────
     # Weights: URL(30%) + WHOIS(25%) + Content(30%) + Visual(15%)
